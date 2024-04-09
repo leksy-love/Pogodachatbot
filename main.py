@@ -1,18 +1,7 @@
-import geocoder
-from bs4 import BeautifulSoup
 import requests
-import lxml
-import pandas as pd
-import logging
 from telegram.ext import Application, MessageHandler, filters,  CommandHandler, ConversationHandler
 import logging
-import telebot
 from telegram import ReplyKeyboardMarkup
-import config
-import aiohttp
-info = requests.get("https://api.openweathermap.org/data/2.5/weather?q=Новосибирск&appid=c062ce8252920e6e0f7e79b988cb9146&units=metric")
-
-print(info.content)
 
 pric = ''
 a = []
@@ -72,21 +61,48 @@ async def second_response(update, context):
     city = update.message.text
     logger.info(city)
     # Используем user_data в ответе.
+    print(city)
     await update.message.reply_text(
         f"Прекрасно! сейчас посмотрим погоду в городе {city}!")
     context.user_data.clear()
-    return ConversationHandler.END # Константа, означающая конец диалога.
-# Все обработчики из states и fallbacks становятся неактивными.
+    return ConversationHandler.END, city
 
 
-def polpogody(info_content):
 
-
-async def pogoda(update, context):
+async def start_pogoda_dialog(update, context):
     await update.message.reply_text(
-        "Привет, пришли данные o погоде в твоем городе!")
+        "Привет, пришли данные о погоде в твоем городе")
     return 1
 
+
+async def pogoda(update, context, city):
+    info = requests.get(
+        "https://api.openweathermap.org/data/2.5/weather?q=" + city + "&appid=c062ce8252920e6e0f7e79b988cb9146&units=metric")
+    ds = info.content.decode('UTF-8')
+    ds = ds.split('\"')
+    f = {}
+    for i in range(len(ds)):
+        if ds[i] == 'temp':
+            asd = ds[i + 1]
+            asd = asd[1:]
+            print(asd)
+            asd = asd[:-1]
+            print(asd)
+            f['Темп'] = float(asd)
+            await update.message.reply_text(
+                "Температура равна", f['Темп'])
+        else:
+            None
+
+
+#def pogoda_dialog_handler() -> ConversationHandler:
+ #   return ConversationHandler(
+  #      entry_points=[CommandHandler('pogoda', start_pogoda_dialog)],
+   #     states={
+   #         1: [MessageHandler(filters.TEXT & ~filters.COMMAND, pogoda)],
+    #    },
+     #   fallbacks=[CommandHandler('stop', stop)]
+    #)
 
 def main():
     application = Application.builder().token(BOT_TOKEN).build()
@@ -103,7 +119,6 @@ def main():
 
     application.add_handler(conv_handler)
 
-    #application.add_handler(geo_dialog_handler())
     application.run_polling()
 
 if __name__ == '__main__':
