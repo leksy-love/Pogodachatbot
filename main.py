@@ -2,11 +2,13 @@ import requests
 from telegram.ext import Application, MessageHandler, filters,  CommandHandler, ConversationHandler
 import logging
 from telegram import ReplyKeyboardMarkup
-
+import sqlite3
 pric = ''
 a = []
 
-
+reply_keyboard = [['/pogoda', '/start_pogoda_dialog'],
+                  ['/help']]
+markup = ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=False)
 
 BOT_TOKEN = '7062541187:AAH4DuPesp2OSwIIIW3-iSZ7qYY-rrPp-Gk'
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.DEBUG)
@@ -63,13 +65,15 @@ async def second_response(update, context):
     # Используем user_data в ответе.
     print(city)
     await update.message.reply_text(
-        f"Прекрасно! сейчас посмотрим погоду в городе {city}!")
+        f"Прекрасно! сейчас посмотрим погоду в городе {city}!",
+    reply_markup=markup
+    )
     context.user_data.clear()
     return ConversationHandler.END, city
 
 
 
-async def start_pogoda_dialog(update, context):
+async def pogoda_nachat(update, context):
     await update.message.reply_text(
         "Привет, пришли данные о погоде в твоем городе")
     return 1
@@ -89,24 +93,19 @@ async def pogoda(update, context, city):
             asd = asd[:-1]
             print(asd)
             f['Темп'] = float(asd)
-            await update.message.reply_text(
-                "Температура равна", f['Темп'])
         else:
             None
 
+    await update.message.reply_text(
+        "Температура равна", f['Темп'])
 
-#def pogoda_dialog_handler() -> ConversationHandler:
- #   return ConversationHandler(
-  #      entry_points=[CommandHandler('pogoda', start_pogoda_dialog)],
-   #     states={
-   #         1: [MessageHandler(filters.TEXT & ~filters.COMMAND, pogoda)],
-    #    },
-     #   fallbacks=[CommandHandler('stop', stop)]
-    #)
+
 
 def main():
     application = Application.builder().token(BOT_TOKEN).build()
     application.add_handler(CommandHandler("help", help_command))
+    application.add_handler(CommandHandler("pogoda", pogoda))
+    application.add_handler(CommandHandler("pogoda_nachat", pogoda_nachat))
     conv_handler = ConversationHandler(
         entry_points=[CommandHandler('start', start)],
         states={
@@ -120,6 +119,8 @@ def main():
     application.add_handler(conv_handler)
 
     application.run_polling()
+
+
 
 if __name__ == '__main__':
     main()
