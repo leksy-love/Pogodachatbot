@@ -3,6 +3,7 @@ from telegram.ext import Application, MessageHandler, filters,  CommandHandler, 
 import logging
 from telegram import ReplyKeyboardMarkup
 import sqlite3
+from math import *
 pric = ''
 a = []
 gorod = ''
@@ -95,8 +96,33 @@ async def pogoda(update, context):
             asd = ds[i + 1]
             asd = asd[1:]
             asd = asd[:-1]
-            f['Темп'] = float(asd)
+            f['Темп'] = floor(float(asd))
             print(f['Темп'])
+        elif ds[i] == 'feels_like':
+            asd = ds[i + 1]
+            asd = asd[1:]
+            asd = asd[:-1]
+            f['Темпчув'] = floor(float(asd))
+            print(f['Темпчув'])
+        elif ds[i] == 'weather':
+            asd = ds[i + 6]
+            f['Погода'] = asd
+            print(f['Погода'])
+        elif ds[i] == 'humidity':
+            asd = ds[i + 1]
+            asd = asd[1:]
+            asd = asd[:-2]
+            f['Влажность'] = asd
+            print(f['Влажность'])
+        elif ds[i] == 'speed':
+            asd = ds[i + 1]
+            asd = asd[1:]
+            asd = asd[:-1]
+            f['Скоростьветра'] = str(asd) + 'м/с'
+            print(f['Скоростьветра'])
+        else:
+            None
+
         else:
             None
     await update.message.reply_text(
