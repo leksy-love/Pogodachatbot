@@ -6,7 +6,7 @@ import sqlite3
 pric = ''
 a = []
 
-reply_keyboard = [['/pogoda', '/start_pogoda_dialog'],
+reply_keyboard = [['/pogoda', '/pogoda_nachat'],
                   ['/help']]
 markup = ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=False)
 
@@ -75,11 +75,12 @@ async def second_response(update, context):
 
 async def pogoda_nachat(update, context):
     await update.message.reply_text(
-        "Привет, пришли данные о погоде в твоем городе")
+        "Нажми на кнопку 'погода' что-бы начать!")
     return 1
 
 
 async def pogoda(update, context, city):
+
     info = requests.get(
         "https://api.openweathermap.org/data/2.5/weather?q=" + city + "&appid=c062ce8252920e6e0f7e79b988cb9146&units=metric")
     ds = info.content.decode('UTF-8')
@@ -99,6 +100,15 @@ async def pogoda(update, context, city):
     await update.message.reply_text(
         "Температура равна", f['Темп'])
 
+
+def pogoda_dialog_handler() -> ConversationHandler:
+    return ConversationHandler(
+        entry_points=[CommandHandler('pogoda', pogoda_nachat)],
+        states={
+            1: [MessageHandler(filters.TEXT & ~filters.COMMAND, pogoda)],
+        },
+        fallbacks=[CommandHandler('stop', stop)]
+    )
 
 
 def main():
