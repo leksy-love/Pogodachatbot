@@ -5,8 +5,8 @@ from telegram import ReplyKeyboardMarkup
 import sqlite3
 pric = ''
 a = []
-
-reply_keyboard = [['/pogoda', '/pogoda_nachat'],
+gorod = ''
+reply_keyboard = [['/pogoda', '/data'],
                   ['/help']]
 markup = ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=False)
 
@@ -60,7 +60,9 @@ async def first_response(update, context):
     return 2
 
 async def second_response(update, context):
+    global gorod
     city = update.message.text
+    gorod = city
     logger.info(city)
     # Используем user_data в ответе.
     print(city)
@@ -73,49 +75,41 @@ async def second_response(update, context):
 
 
 
-async def pogoda_nachat(update, context):
+async def data(update, context):
     await update.message.reply_text(
-        "Нажми на кнопку 'погода' что-бы начать!")
+        f"Ты смотришь погоду в городе {gorod}"
+    )
     return 1
 
 
-async def pogoda(update, context, city):
-
+async def pogoda(update, context):
+    global gorod
     info = requests.get(
-        "https://api.openweathermap.org/data/2.5/weather?q=" + city + "&appid=c062ce8252920e6e0f7e79b988cb9146&units=metric")
+        "https://api.openweathermap.org/data/2.5/weather?q=" + gorod + "&appid=c062ce8252920e6e0f7e79b988cb9146&units=metric")
     ds = info.content.decode('UTF-8')
+    print(ds)
     ds = ds.split('\"')
     f = {}
     for i in range(len(ds)):
         if ds[i] == 'temp':
             asd = ds[i + 1]
             asd = asd[1:]
-            print(asd)
             asd = asd[:-1]
-            print(asd)
             f['Темп'] = float(asd)
+            print(f['Темп'])
         else:
             None
-
     await update.message.reply_text(
-        "Температура равна", f['Темп'])
-
-
-def pogoda_dialog_handler() -> ConversationHandler:
-    return ConversationHandler(
-        entry_points=[CommandHandler('pogoda', pogoda_nachat)],
-        states={
-            1: [MessageHandler(filters.TEXT & ~filters.COMMAND, pogoda)],
-        },
-        fallbacks=[CommandHandler('stop', stop)]
+        f"Погода в городе {gorod}: Температура равна {f['Темп']}"
     )
 
+    return f
 
 def main():
     application = Application.builder().token(BOT_TOKEN).build()
     application.add_handler(CommandHandler("help", help_command))
     application.add_handler(CommandHandler("pogoda", pogoda))
-    application.add_handler(CommandHandler("pogoda_nachat", pogoda_nachat))
+    application.add_handler(CommandHandler("data", data))
     conv_handler = ConversationHandler(
         entry_points=[CommandHandler('start', start)],
         states={
