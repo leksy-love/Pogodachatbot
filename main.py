@@ -2,7 +2,6 @@ import requests
 from telegram.ext import Application, MessageHandler, filters,  CommandHandler, ConversationHandler
 import logging
 from telegram import ReplyKeyboardMarkup
-import sqlite3
 from math import *
 pric = ''
 a = []
@@ -88,7 +87,6 @@ async def pogoda(update, context):
     info = requests.get(
         "https://api.openweathermap.org/data/2.5/weather?q=" + gorod + "&appid=c062ce8252920e6e0f7e79b988cb9146&units=metric")
     ds = info.content.decode('UTF-8')
-    print(ds)
     ds = ds.split('\"')
     f = {}
     for i in range(len(ds)):
@@ -97,36 +95,34 @@ async def pogoda(update, context):
             asd = asd[1:]
             asd = asd[:-1]
             f['Темп'] = floor(float(asd))
-            print(f['Темп'])
         elif ds[i] == 'feels_like':
             asd = ds[i + 1]
             asd = asd[1:]
             asd = asd[:-1]
             f['Темпчув'] = floor(float(asd))
-            print(f['Темпчув'])
         elif ds[i] == 'weather':
             asd = ds[i + 6]
             f['Погода'] = asd
-            print(f['Погода'])
         elif ds[i] == 'humidity':
             asd = ds[i + 1]
             asd = asd[1:]
             asd = asd[:-2]
-            f['Влажность'] = asd
-            print(f['Влажность'])
+            f['Влажность'] = asd + '%'
         elif ds[i] == 'speed':
             asd = ds[i + 1]
             asd = asd[1:]
             asd = asd[:-1]
             f['Скоростьветра'] = str(asd) + 'м/с'
-            print(f['Скоростьветра'])
         else:
-            None
+            print("Что то пошло не так")
 
-        else:
-            None
     await update.message.reply_text(
-        f"Погода в городе {gorod}: Температура равна {f['Темп']}"
+        f"Погода в городе {gorod}:\n"
+        f"Температура равна {f['Темп']}\n"
+        f"Ощущается как {f['Темпчув']}\n"
+        f"Погода - {f['Погода']}\n"
+        f"Влажность {f['Влажность']}\n"
+        f"Скорость ветра равна {f['Скоростьветра']}"
     )
 
     return f
