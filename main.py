@@ -6,9 +6,6 @@ from math import *
 pric = ''
 a = ''
 gorod = ''
-reply_keyboard = [['/pogoda', '/data'],
-                  ['/help']]
-markup = ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=False)
 
 BOT_TOKEN = '7062541187:AAH4DuPesp2OSwIIIW3-iSZ7qYY-rrPp-Gk'
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.DEBUG)
@@ -73,6 +70,9 @@ async def second_response(update, context):
     context.user_data.clear()
     return gorod
 
+reply_keyboard = [['/pogoda', '/data'],
+                  ['/help', '/picture']]
+markup = ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=False)
 
 async def data(update, context):
     await update.message.reply_text(
@@ -130,6 +130,8 @@ async def pogoda(update, context):
 
     return f
 
+async def send_picture(update, context):
+    await context.bot.send_photo(update.message.chat.id, photo='https://disk.yandex.ru/i/wZMQoKZyVEiB3g')
 
 
 def main():
@@ -137,6 +139,7 @@ def main():
     application.add_handler(CommandHandler("help", help_command))
     application.add_handler(CommandHandler("pogoda", pogoda))
     application.add_handler(CommandHandler("data", data))
+    application.add_handler(CommandHandler("picture", send_picture))
     conv_handler = ConversationHandler(
         entry_points=[CommandHandler('start', start)],
         states={
