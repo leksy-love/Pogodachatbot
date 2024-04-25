@@ -1,0 +1,6 @@
+python-telegram-bot==21.0.1
+pytelegrambotapi==4.16.1
+pandas==2.2.1
+numpy==1.26.4
+async-timeout==4.0.3
+requests==2.31.0

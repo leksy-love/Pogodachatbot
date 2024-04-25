@@ -27,10 +27,10 @@ async def start(update, context):
     global pric, a
     """Отправляет сообщение когда получена команда /start"""
     user = update.effective_user
-    #print(user)
+    print(user)
     pric = str(user)
     pric = pric.split(',')
-    pric = pric[4]
+    pric = pric[-1]
     pric = pric[11:]
     pric = pric[:-2]
     a = pric
@@ -41,7 +41,7 @@ async def start(update, context):
         )
     else:
         await update.message.reply_html(
-            rf"Привет {user.mention_html()}! Я погода бот. Как мне тебя называть?",
+            rf"Привет {user.mention_html()}! Я погода-бот. Как мне тебя называть?",
         )
     return 1
 
